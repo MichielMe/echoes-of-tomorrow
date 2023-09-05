@@ -1,51 +1,50 @@
-##### --------------------- MONGODB --------------------- #####
+import os
+from datetime import datetime
+from supabase_py import create_client
+from dotenv import load_dotenv
 
-# from pymongo.mongo_client import MongoClient
-# from dotenv import load_dotenv
-# import os
+load_dotenv()
 
-# load_dotenv()
-# uri = os.getenv("MONGODB_URI")
+url = os.getenv("SUPABASE_URL")
+key = os.getenv("SUPABASE_KEY")
+supabase = create_client(url, key)
 
-# client = MongoClient(uri)
-# db = client.storytelling_mastodon
-# stories = db.stories
-
-# def save_new_chunk(new_chunk):
-#     stories.insert_one({"chunk": new_chunk})
-
-# def get_last_story_chunk():
-#     last_story = stories.find_one(sort=[("_id", -1)])
-#     return last_story["chunk"] if last_story else None
-
-
-
-##### --------------------- SQLITE --------------------- #####
-from sqlalchemy import create_engine, Column, Integer, String, Sequence
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-Base = declarative_base()
-
-class Story(Base):
-    __tablename__ = 'stories'
-    id = Column(Integer, Sequence('story_id_seq'), primary_key=True)
-    chunk = Column(String(500))
-
-engine = create_engine('sqlite:///stories.db')
-
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
-def save_new_chunk(new_chunk):
-    story = Story(chunk=new_chunk)
-    session.add(story)
-    session.commit()
-
+def save_new_chunk(story_chunk):
+    table = "story_chunks"
+    new_entry = {
+        'chunks': story_chunk,
+        'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    response = supabase.table(table).insert(new_entry).execute()
+    if response.get('error'):
+        print(f"Insert Error: {response['error']}")
+        
 def get_last_story_chunk():
-    last_story = session.query(Story).order_by(Story.id.desc()).first()
-    return last_story.chunk if last_story else None
+    table = "story_chunks"
+    response = supabase.table(table).select('*').order('created_at').limit(1).execute()
+    data = response.get('data')
+    if not data:
+        print("Fetch Error: Could not retrieve data.")
+        return None
+    return data[0]['chunks']
 
-save_new_chunk("This is a test for my story")
+def fetch_all_story_chunks_and_save_to_txt():
+    # Fetch all story chunks from Supabase
+    table = "story_chunks"
+    response = supabase.table(table).select('*').order('created_at').execute()
+    
+    # Check if data is received
+    if response.get('data') is None:
+        print("Fetch Error: Could not retrieve data.")
+        return
+    
+    # Sort the data by timestamp
+    sorted_data = sorted(response['data'], key=lambda x: x['created_at'])
+    
+    # Write the sorted chunks to a .txt file
+    with open("../echoes-of-tomorrow/story.txt", "w") as f:
+        for chunk in sorted_data:
+            f.write(chunk['chunks'])
+            f.write("\n---\n")  # A separator between each story chunk
+    
+    print("Story saved to story.txt")

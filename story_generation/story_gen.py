@@ -32,7 +32,7 @@ def generate_story_chunk():
         messages.append({"role": "assistant", "content": f"Last Story Chunk: {last_chunk}"})
     
     # Add the instruction for generating the next story chunk
-    messages.append({"role": "user", "content": "Continue the story.  The text can absolutely not have more then 500 characters. Limit it to 500 characters."})
+    messages.append({"role": "user", "content": "Continue the story.  The text can absolutely not have more then 500 characters. Limit it to 500 characters, that's super important!"})
     
     # Make the API call
     response = openai.ChatCompletion.create(
