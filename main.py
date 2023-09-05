@@ -18,7 +18,7 @@ def main():
     fetch_all_story_chunks_and_save_to_txt()
     
     # Post the new story chunk with prefix to Mastodon
-    post_to_mastodon("testje")
+    post_to_mastodon(new_chunk_with_prefix)
     
     print(new_chunk_with_prefix)
 
