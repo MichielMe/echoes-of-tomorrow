@@ -1,0 +1,38 @@
+name: run main.py
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Every hour
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout repo content
+        uses: actions/checkout@v2 # checkout the repository content to github runner
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11' # install the python version needed
+          
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: execute py script # run main.py
+        env:
+            OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+            MASTODON_CLIENT_KEY: ${{ secrets.MASTODON_CLIENT_KEY }}
+            MASTODON_CLIENT_SECRET: ${{ secrets.MASTODON_CLIENT_SECRET }}
+            MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+            MASTODON_EMAIL: ${{ secrets.MASTODON_EMAIL }}
+            MASTODON_PW: ${{ secrets.MASTODON_PW }}
+            MASTODON_REDIRECT_URI: ${{ secrets.MASTODON_REDIRECT_URI }}
+            SP_DB_PW: ${{ secrets.SP_DB_PW }}
+            SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+            SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python main.py
+          

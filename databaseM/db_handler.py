@@ -48,3 +48,12 @@ def fetch_all_story_chunks_and_save_to_txt():
             f.write("\n---\n")  # A separator between each story chunk
     
     print("Story saved to story.txt")
+
+def get_story_chunk_count():
+    """
+    Get the count of story chunks from the database.
+    """
+    table = "story_chunks"
+    response = supabase.table(table).select('id').execute()
+    return len(response['data'])
+
